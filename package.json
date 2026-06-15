@@ -1,0 +1,15 @@
+{
+  "name": "pi-vision",
+  "version": "1.0.0",
+  "description": "Universal image understanding for text-only models in pi — MLX and Ollama backends with smart caching",
+  "keywords": ["pi-package"],
+  "license": "MIT",
+  "pi": {
+    "extensions": ["./extensions"]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-ai": "*",
+    "@earendil-works/pi-agent-core": "*",
+    "@earendil-works/pi-coding-agent": "*"
+  }
+}
