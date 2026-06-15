@@ -633,7 +633,7 @@ export default function (pi: ExtensionAPI) {
 					ctx.ui.notify(`Testing ${cfg.model} at ${cfg.baseUrl} …`, "info");
 					// 8×8 red PNG — just checks connectivity + that the model answers.
 					const testPng =
-						"iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAFklEQVR42mP8z8BQz0AEYBxVSF+FAP8FA/2v3T0lAAAAAElFTkSuQmCC";
+						"iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAlElEQVR4nO3QMREAMBDDsPAn/YWhoR60+7zb7mfTAVoDdIDWAB2gNUAHaA3QAVoDdIDWAB2gNUAHaA3QAVoDdIDWAB2gNUAHaA3QAVoDdIDWAB2gNUAHaA3QAVoDdIDWAB2gNUAHaA3QAVoDdIDWAB2gNUAHaA3QAVoDdIDWAB2gNUAHaA3QAVoDdIDWAB2gNUAHaA9DiOHSbdjxEgAAAABJRU5ErkJggg==";
 					const start = Date.now();
 					try {
 						const text = await captionImage(
