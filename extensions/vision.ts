@@ -406,6 +406,25 @@ function wrapCaption(cfg: VisionConfig, text: string): string {
 	);
 }
 
+// ── Status label helpers ────────────────────────────────────────────────────
+
+/** Shorten a vision model id for compact status bar display. */
+function shortVisionModel(id: string): string {
+	// Strip provider prefix (e.g. "mlx-community/")
+	let s = id.includes("/") ? id.split("/").pop()! : id;
+	// Strip trailing bit-width / quant suffixes
+	s = s.replace(/-4bit$|-8bit$|-int4$|-int8$|-GPTQ$/i, "");
+	// Strip trailing date/version hashes
+	s = s.replace(/-[0-9a-f]{8,}$/, "").replace(/-\d{8,}$/, "");
+	// For very long names, keep most meaningful segments
+	if (s.length > 28) {
+		const parts = s.split("-");
+		const meaningful = parts.filter(p => !/^\d{4,}$/.test(p) && !/^[0-9a-f]{6,}$/i.test(p));
+		s = meaningful.slice(0, 3).join("-");
+	}
+	return s;
+}
+
 // ── Extension ────────────────────────────────────────────────────────────────
 
 const ROLES_WITH_IMAGES = new Set(["user", "toolResult"]);
@@ -489,28 +508,18 @@ export default function (pi: ExtensionAPI) {
 
 		lastTurnStats = stats;
 		if (touched) {
-			renderStatus(ctx, cfg, stats);
+			notifyVisionChanged();
 			return { messages: out };
 		}
 	});
 
-	pi.on("model_select", async (_e, ctx) => renderStatus(ctx, loadConfig(), lastTurnStats));
-	pi.on("session_start", async (_e, ctx) => renderStatus(ctx, loadConfig(), lastTurnStats));
-
-	function renderStatus(ctx: ExtensionContext, cfg: VisionConfig, stats: typeof lastTurnStats) {
-		const model = ctx.model;
-		const textOnly = !!model && Array.isArray(model.input) && !model.input.includes("image");
-		// Only show the badge when we're actually doing work: a text-only primary
-		// model with vision enabled.
-		if (!cfg.enabled || !textOnly) {
-			ctx.ui.setStatus?.("vision", "");
-			return;
-		}
-		const theme = (ctx.ui as any).theme;
-		const n = stats.captioned + stats.cached;
-		const label = `👁 ${cfg.model}${n ? ` (${n})` : ""}`;
-		ctx.ui.setStatus?.("vision", theme?.fg ? theme.fg("dim", label) : label);
+	/** Notify rice (and any other listener) that vision status changed. */
+	function notifyVisionChanged() {
+		pi.events.emit("vision_status", { cfg: loadConfig(), stats: lastTurnStats });
 	}
+
+	pi.on("model_select", async (_e, _ctx) => notifyVisionChanged());
+	pi.on("session_start", async (_e, _ctx) => notifyVisionChanged());
 
 	// ── /vision command ────────────────────────────────────────────────────────
 
@@ -543,12 +552,12 @@ export default function (pi: ExtensionAPI) {
 				case "on":
 					saveConfig({ enabled: true });
 					ctx.ui.notify("Vision enabled.", "info");
-					renderStatus(ctx, loadConfig(), lastTurnStats);
+					notifyVisionChanged();
 					return;
 				case "off":
 					saveConfig({ enabled: false });
 					ctx.ui.notify("Vision disabled.", "info");
-					renderStatus(ctx, loadConfig(), lastTurnStats);
+					notifyVisionChanged();
 					return;
 				case "backend": {
 					if (!isBackend(arg)) {
@@ -563,7 +572,7 @@ export default function (pi: ExtensionAPI) {
 						[`Vision backend → ${BACKENDS[arg].label}`, "", ...BACKENDS[arg].setup(next.model)].join("\n"),
 						"info",
 					);
-					renderStatus(ctx, next, lastTurnStats);
+					notifyVisionChanged();
 					return;
 				}
 				case "preset": {
@@ -578,7 +587,7 @@ export default function (pi: ExtensionAPI) {
 						[`Vision preset → ${arg} (${next.model})`, "", ...BACKENDS[next.backend].setup(next.model)].join("\n"),
 						"info",
 					);
-					renderStatus(ctx, next, lastTurnStats);
+					notifyVisionChanged();
 					return;
 				}
 				case "model": {
@@ -588,7 +597,7 @@ export default function (pi: ExtensionAPI) {
 					}
 					saveConfig({ model: arg });
 					ctx.ui.notify(`Vision model → ${arg}`, "info");
-					renderStatus(ctx, loadConfig(), lastTurnStats);
+					notifyVisionChanged();
 					return;
 				}
 				case "clear":
