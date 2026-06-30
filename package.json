@@ -1,15 +1,62 @@
 {
   "name": "pi-vision",
   "version": "1.0.0",
-  "description": "Universal image understanding for text-only models in pi — MLX and Ollama backends with smart caching",
-  "keywords": ["pi-package"],
+  "description": "Universal image understanding for text-only models in pi — MLX, Ollama, and custom OpenAI-compatible backends with smart caching",
+  "keywords": [
+    "pi-package",
+    "vision",
+    "image",
+    "captioning",
+    "mlx",
+    "ollama",
+    "multimodal",
+    "local-ai",
+    "screenshot",
+    "ocr",
+    "apple-silicon"
+  ],
   "license": "MIT",
+  "author": {
+    "name": "pi-vision contributors"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dvictor357/vision-pi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dvictor357/vision-pi/issues"
+  },
+  "homepage": "https://github.com/dvictor357/vision-pi#readme",
+  "type": "module",
+  "main": "extensions/vision.ts",
+  "files": [
+    "extensions/",
+    "src/",
+    "README.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md"
+  ],
   "pi": {
-    "extensions": ["./extensions"]
+    "extensions": [
+      "./extensions"
+    ]
   },
   "peerDependencies": {
-    "@earendil-works/pi-ai": "*",
-    "@earendil-works/pi-agent-core": "*",
-    "@earendil-works/pi-coding-agent": "*"
+    "@earendil-works/pi-agent-core": ">=0.79",
+    "@earendil-works/pi-ai": ">=0.79",
+    "@earendil-works/pi-coding-agent": ">=0.79"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "npx tsx --test --test-concurrency 1 test/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "pack": "npm pack --dry-run"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.1",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3"
   }
 }
